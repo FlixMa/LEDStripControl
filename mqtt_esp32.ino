@@ -82,7 +82,8 @@ void scanNetworks() {
 
 // warm white - no brightness
 CHSV currentColor = CHSV(21, 183, 0);
-CHSV targetColor = CHSV(21, 183, 80); 
+CHSV targetColor = CHSV(21, 183, 80);
+int lastBrightness = 80;
 
 void callback(char* topic, byte* message, unsigned int length) {
   String messageTemp;
@@ -94,9 +95,10 @@ void callback(char* topic, byte* message, unsigned int length) {
 
   if (String(topic) == "Felix/LEDStrip/PowerState") {
     if (messageTemp != "true") {
+      lastBrightness = targetColor.value;
       targetColor.value = 0;
     } else {
-      targetColor.value = 255;
+      targetColor.value = lastBrightness;
     }
   } else if (String(topic) == "Felix/LEDStrip/Hue") {
     targetColor.hue = map(messageTemp.toInt(), 0, 360, 0, 255);
@@ -106,6 +108,7 @@ void callback(char* topic, byte* message, unsigned int length) {
     
   } else if (String(topic) == "Felix/LEDStrip/Brightness") {
     targetColor.value = map(messageTemp.toInt(), 0, 100, 0, 255);
+    lastBrightness = targetColor.value;
     
   } else {
     Serial.print("Unrecognized topic '");
